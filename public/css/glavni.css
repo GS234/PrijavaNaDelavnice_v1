@@ -1,0 +1,68 @@
+/*fonti*/
+@font-face {
+    font-family: font1;
+    src: url('../fonts/Righteous-Regular.ttf');
+  }
+/*--------------*/
+
+
+/*navigation bar:*/
+.navigation{
+    /*background-color: #333;*/
+    /*
+    background: rgb(4,128,27);
+    background: linear-gradient(90deg, rgba(4,128,27,1) 0%, rgba(29,87,40,1) 75%, rgba(51,51,51,1) 100%);
+    */
+    background: rgb(4,128,27);
+    background: linear-gradient(90deg, rgba(4,128,27,1) 22%, rgba(29,87,40,1) 32%, rgba(51,51,51,1) 43%);
+
+    overflow: hidden;
+}
+.navigation div {
+    background-color: #04801b;
+    /*border-radius: 15px;*/
+    
+    float: left;
+    color: #f2f2f2;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-family: font1;
+    font-size: 17px;
+}
+
+
+.navigation a {
+    float: left;
+    color: #f2f2f2;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-family: font1;
+    font-size: 17px;
+}
+.navigation a:hover {
+  background-color: rgba(92, 135, 0, 0.588);
+  border-radius: 10px;
+  color: black;
+}
+.navigation a.active {
+  background-color: #04AA6D;
+  color: white;
+}
+/*-------------------*/
+
+/*body*/
+
+.gumb1 {
+  background-color: #79b600;
+  border-radius: 10px;
+  color: black;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  cursor: pointer;
+  font-family: font1;
+  font-size: 17px;
+}
+

@@ -1,0 +1,13 @@
+{
+    "name": "Prijava na delavnice",
+    "description": "Prijava na delavnice",
+    "version": "1.0",
+    "author": "Gasper Suhadolnik",
+    "dependencies":{
+        "express":"*",
+        "hbs":"*",
+        "formidable":"*",
+        "sqlite3":"*"
+    },
+    "private": true
+}
