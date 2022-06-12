@@ -44,7 +44,7 @@
 .navigation a:hover {
   background-color: rgba(92, 135, 0, 0.588);
   border-radius: 10px;
-  color: black;
+  color: #b6b6b6;/*black;*/
 }
 .navigation a.active {
   background-color: #04AA6D;
@@ -53,6 +53,10 @@
 /*-------------------*/
 
 /*body*/
+
+ul {
+  list-style-type: none;
+}
 
 .gumb1 {
   background-color: #79b600;
@@ -64,5 +68,17 @@
   cursor: pointer;
   font-family: font1;
   font-size: 17px;
+}
+
+.gumb2{
+  min-width: 100px;
+}
+
+.oznaka {
+  padding: 5px;
+  background-color: #e5ccad;
+  border-radius: 6px;
+  /*font-family: font1;*/
+  font-size: 20px;
 }
 

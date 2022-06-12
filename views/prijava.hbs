@@ -1,3 +1,33 @@
 <div>
     <h1>Prijava na delavnice</h1>
+
+    <!-- seznam vseh udelezencev na izbrani delavnici (to je levo) -->
+    <div>
+        <h2>Seznam otrok na delavnici: <span class="oznaka" id="delavnica_izbrana" hidden></span></h2>
+        <!-- kle bi blo bols met tabelco -->
+        <ol id="prijavljeni_seznam">
+            
+        </ol>
+    </div>
+
+    <!-- seznam vseh delavnic -->
+    <div id="delavnice_seznam">
+        <h2>Seznam delavnic:</h2>
+        <ul>
+            {{#each delavnice_seznam as |delavnica|}}
+            <li><button class="gumb2" onclick="izberiDelavnico('{{delavnica.naziv}}')">{{delavnica.naziv}}</button></li>
+            {{/each}}
+        </ul>
+    </div>
+
+    <!-- polje za prijavo -->
+    <div>
+        <h2>Prijavi udeleženca</h2>
+        <div id="prijava_polje">
+            
+        </div>
+    </div>
+
 </div>
+<script src="/js/prijava.js"></script>
+<script src="/js/jquery.min.js"></script>
