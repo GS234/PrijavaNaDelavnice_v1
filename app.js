@@ -39,24 +39,29 @@ streznik.get("/prijava/", (zahteva, odgovor)=>{
 
 
 //opravki z bazo:
-streznik.get("/query/prijavljeni/:delavnica", (zahteva, odgovor)=>{
+streznik.get("/query/prijavljeni/:delavnica/:datum", (zahteva, odgovor)=>{ //"/query/prijavljeni/:delavnica/:datum"
 	//console.log(zahteva.params.delavnica);
+	//console.log(zahteva.params.datum);
 	let d = zahteva.params.delavnica;
-	let datum = new Date();
-	let datum_format = "2022-04-06";//datum.toISOString().split("T")[0];
+	let datum_format = zahteva.params.datum;
+	
+	//let datum = new Date();
+	//let datum_format = datum.toISOString().split("T")[0]; //"2022-04-06";
 
-	console.log(d + " " + datum_format);
+	//datum_format = zahteva.params.datum;
+
+	//console.log(d + " " + datum_format);
 
 
 	naDelavnici(d, datum_format, (vrstice)=>{
 		if(vrstice != false){
 			odgovor.end(vrstice);
-			console.log(vrstice);
+			//console.log(vrstice);
 			return;
 		}
 		else {
 			odgovor.end("napaka");
-			console.log("napaka");
+			//console.log("napaka");
 		}
 	});
 	
@@ -84,5 +89,4 @@ var naDelavnici = (delavnica, datum, povratniKlic)=>{
 
 streznik.listen(process.env.PORT, ()=>{
 	console.log("Streznik laufa");
-	//aaa
 });
