@@ -3,8 +3,16 @@
     <hr>
     <span>Encoding: </span><input id="file_encoding" type="text" placeholder="encoding" value="windows-1250">
     <input type="file" id="datoteka_izbira" accept=".csv">
-    <table id="tabela_glavna">
+    
+    <hr>
+    <table id="tabela_glavna" hidden></table>
+    <hr>
+
+    
+    <button onclick="dodajPrazno()">Dodaj prazno</button>
+    <button onclick="izbrisiPrazne()">Izbriši prazne vrstice</button>
+    <button onclick="prikaziDuplikate()">Označi duplikate</button>
         
-    </table>
+    
 </div>
 <script src="/js/dodajanje.js"></script>

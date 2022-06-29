@@ -1,4 +1,5 @@
 var tabela;
+var tabelaUndo; //bols bi blo narest dejanski sklad (ampak to zahteva pomnilnik)
 var datoteka;
 var encoding;
 
@@ -17,7 +18,6 @@ window.addEventListener('load', () => {
         else{
             console.log("napaka pri dodajanju podatkov");
         }
-
     });
 
     let encoding_input = document.getElementById("file_encoding");
@@ -47,7 +47,8 @@ var dodajPodatkeCSV = (file, tab)=>{
 
         let tab_vsebina = "";
         let colMax = 0;
-        for(let i = 0; i < vrstice.length; i++){ //vrstice
+        //vrstice
+        for(let i = 0; i < vrstice.length; i++){
             tab_vsebina += "<tr id='row_"+i+"'> <td><button id='"+"btn_"+i+"' onclick='izbrisiVrstico("+i+")'>X</button></td> ";
             let polja = vrstice[i].split(',');
             if(colMax < polja.length) colMax = polja.length; //nastavimo polja
@@ -60,23 +61,227 @@ var dodajPodatkeCSV = (file, tab)=>{
         //stolpci
         let controlRow = "<tr>";
         for(let i = 0; i <= colMax; i++){
-            if(i != 0) controlRow = controlRow +
-                "<td id='col_"+(i-1)+"'>\
-                    <button id='"+"btn_"+(i-1)+"' onclick='izbrisiStolpec("+(i-1)+")'>X</button>\
-                    <button onclick='razdeliStolpec("+(i-1)+", \" \", 0)'><></button>\
-                </td>";
-            else controlRow = controlRow+ "<td></td>"
+            if(i != 0) controlRow = controlRow + dodajKontrolnoCelico(i-1);
+            else controlRow = controlRow+ "<td><button onclick='tabelaUndo1()'> <- </button></td>"
         }
         controlRow = controlRow + "</tr>";
         tab_vsebina = controlRow + tab_vsebina;
         tab.innerHTML = tab_vsebina;
-
-
+        tab.hidden = false;
     });
     return 1;
 }
 
+var tabelaUndo1 = ()=>{
+    tabPop();
+};
+
+var tabPush = ()=>{
+    tabelaUndo = tabela.innerHTML;
+};
+
+var tabPop = ()=>{
+    if(tabelaUndo) tabela.innerHTML = tabelaUndo;
+}
+
+var dodajKontrolnoCelico = (stolpecId)=>{
+    return  "\
+        <td id='col_"+(stolpecId)+"'>\
+            <button id='"+"btn_"+(stolpecId)+"' onclick='izbrisiStolpec("+(stolpecId)+")'>X</button>\
+            <button onclick='razdeliStolpec("+(stolpecId)+", \" \", 0)'><></button>\
+            <button onclick='normalizirajStolpec("+(stolpecId)+")'>Aa</button>\
+        </td>"
+};
+
+var podatkovnaCelica = (stolpecId, podatki)=>{
+    let vrni = document.createElement("td");
+    vrni.id = "col_"+stolpecId;
+    vrni.innerHTML = "<input value='"+podatki+"'>";
+    return vrni;
+};
+
+var kontrolnaCelica = (stolpecId)=>{
+    let vrni = document.createElement("td");
+    vrni.id = "col_"+(stolpecId);
+    vrni.innerHTML = 
+                "<button id='"+"btn_"+(stolpecId)+"' onclick='izbrisiStolpec("+(stolpecId)+")'>X</button>\
+                <button onclick='razdeliStolpec("+(stolpecId)+", \" \", 0)'><></button>\
+                <button onclick='normalizirajStolpec("+(stolpecId)+")'>Aa</button>"
+    return vrni;
+};
+
+var generirajStolpec = (tabela, podatki, kateri)=>{
+    //generira stolpec iz podatkov (podatki: navadn array)
+    let stolpecId = Math.floor(Math.random()*10000);
+    //console.log(stolpecId);
+    //console.log(podatki);
+    //iteracija skozi vrstice:
+
+    //console.log(tabela.rows);
+    let vrsticeTab = tabela.rows;
+    for(let i = 0; i < vrsticeTab.length; i++){
+        let vrsticaa = vrsticeTab[i];
+
+        let celiceTab = vrsticaa.cells;
+        //console.log(celiceTab);
+
+        //console.log(vrsticaa.id);
+        
+        if(i==0){
+            //vrsticaa.innerHTML += dodajKontrolnoCelico(stolpecId);
+            //celiceTab.push(kontrolnaCelica(stolpecId))//splice(1, 0, kontrolnaCelica(stolpecId));
+            vrsticaa.insertBefore(kontrolnaCelica(stolpecId), (kateri != undefined)?celiceTab[kateri]:celiceTab[1]);
+        }
+        else{
+            if(podatki[i-1] == undefined) continue;
+            //console.log("-> " + podatki[i-1] + " <- ");
+            //vrsticaa.innerHTML += "<td id='col_"+stolpecId+"'><input value='"+podatki[i-1]+"'></td>";
+            //celiceTab.push(podatkovnaCelica(stolpecId, podatki[i-1])) //splice(1, 0, podatkovnaCelica(stolpecId, podatki[i-1]));
+            vrsticaa.insertBefore(podatkovnaCelica(stolpecId, podatki[i-1]), (kateri != undefined)?celiceTab[kateri]:celiceTab[1]);
+        }
+        
+       //console.log(celiceTab);
+        //console.log(vrsticaa);
+    }
+};
+//lahko se generiraj tabelo (podatki: json (stolpci: vrstice))
+var capitalizeFirst = (niz)=>{
+    return niz.charAt(0).toUpperCase() + niz.substring(1).toLowerCase();
+};
+
+var normalizirajStolpec = (stolpecId)=>{
+    //funkcija nize normalizira tako, da jih spremeni v obliko z veliko zacetnico
+    let elementiStolpca = tabela.querySelectorAll("td#col_"+stolpecId);
+    for(let i = 0; i < elementiStolpca.length; i++){
+        let inputFi = elementiStolpca[i].querySelector("input");
+        
+        if(inputFi){
+            if(inputFi.value != ''){
+                let besede = inputFi.value.split(' ');
+                let normalnaVrednost = "";
+                for(let b = 0; b < besede.length; b++){
+                    if(b != 0) normalnaVrednost = normalnaVrednost + " ";
+                    normalnaVrednost = normalnaVrednost + capitalizeFirst(besede[b]);
+                }
+                inputFi.value = normalnaVrednost;
+
+            }
+        }
+        //console.log(inputFi);
+    }
+}
+
+var dodajPrazno = ()=>{
+    tabPush();
+    //na konec doda prazno vrstico
+    let vrstice = tabela.rows;
+    let najdaljsa = vrstice[0];
+
+    let stolpci = najdaljsa.cells; //celice
+
+    let novaVrstica = document.createElement("tr");
+    let novId = vrstice[vrstice.length-1].id.split("_")[1];
+    novId = parseInt(novId)+1; //dodamo +1
+
+    novaVrstica.id = "row_"+novId;
+    
+    for(let i = 0; i< stolpci.length; i++){
+        let novCell = document.createElement("td");
+        if(i == 0){
+            novCell.innerHTML = "<button onclick='izbrisiVrstico("+novId+")'>X</button>"; //"<button onclick='izbrisiVrstico(\"row_"+novId+"\")'>X</button>";
+        }
+        else{
+            novCell.id = stolpci[i].id; //zto da majo celli enake id-je po stolpcih
+            novCell.innerHTML = "<input value=''>";
+        }
+        novaVrstica.appendChild(novCell);
+    }
+    
+    tabela.appendChild(novaVrstica);
+    //console.log(novaVrstica);
+
+
+};
+
+//to je treba se mal pregledat
+var izbrisiPrazne = ()=>{
+    tabPush();
+    //izbrise prazne vrstice
+    let vrstice = tabela.rows;
+    for(let i = 0; i < vrstice.length; i++){
+        let vrstica = vrstice[i];
+        let celice = vrstica.querySelectorAll("td");
+        if(i != 0){
+            //console.log(celice);
+            let prazna = 1;
+            for(let j = 0; j < celice.length; j++){
+                if(j == 0) continue; //prva vrstica ima not gumb za izbris
+                let vrednost = celice[j].querySelector("input").value;
+                //console.log(vrednost);
+                if(vrednost != ''){
+                    prazna = 0;
+                    break;
+                }
+            }
+
+            if(prazna == 1){
+                //console.log(vrstica.id.split("_")[1]);
+                izbrisiVrstico(vrstica.id.split("_")[1]);
+            }
+        }
+    }
+};
+
+var prikaziDuplikate = ()=>{
+    //oznaci vrstice, ki vsebujejo iste podatke (odločitev na strani vpisovalca;
+    //lahko se zgodi, da imata dve osebi isto ime in priimek)
+    //v takem primeru je smiselno oznaciti eno izmed obeh npr. s stevilko
+    let vrstice = tabela.rows;
+    
+    //else vrstice[0].classList.remove("oznaka");
+    if(vrstice[0].classList.contains("oznaka")) vrstice[0].classList.remove("oznaka");
+    else vrstice[0].classList.add("oznaka");
+    /*
+    for(let i = 0; i < vrstice.length; i++){
+        if(i == 0) continue;
+        let vrstica = vrstice[i];
+        for(let j = i+1; j< vrstice.length; j++){
+            let drugaV = vrstice[j];
+            let aliEnaki = primerjajVrstici(vrstica, drugaV);
+            if(aliEnaki == 1){
+                console.log(vrstica.id + " == " + drugaV.id);
+            }
+        }
+    }
+    */
+};
+
+var primerjajVrstici = (prva, druga)=>{
+    /*
+    let celice1 = prva.querySelectorAll("td");
+    let celice2 = druga.querySelectorAll("td");
+
+    if(celice1.length != celice2.length) return 0;
+    let n = celice1.length;
+    //console.log(celice1);
+    //console.log(celice2);
+    console.log(1);
+    for(let i =0 ; i <n; i++){
+        //console.log(celice1[i].innerHTML + " ?= " + celice2[i].innerHTML);
+        if(celice1[i].innerHTML != celice2[i].innerHTML){
+            return 0;
+        }
+    }
+    
+    console.log(celice1[i].innerHTML + ", " + celice2[i].innerHTML);
+    return 1;
+    */
+   return 0;
+};
+
+
 var izbrisiStolpec = (stolpecId)=>{
+    tabPush();
     //console.log("Stolpec za izbris: " + stolpecId);
     let elementiStolpca = tabela.querySelectorAll("td#col_"+stolpecId);
     for(let i = 0; i < elementiStolpca.length; i++) elementiStolpca[i].remove();
@@ -84,6 +289,7 @@ var izbrisiStolpec = (stolpecId)=>{
 };
 
 var izbrisiVrstico = (vrsticaId)=>{
+    tabPush();
     //console.log("Vrstica za izbris: " + vrsticaId);
     let vrstica = tabela.querySelector("tr#row_"+vrsticaId);
     vrstica.remove();
@@ -91,26 +297,59 @@ var izbrisiVrstico = (vrsticaId)=>{
 
 //rabi se mal razmisleka...
 var razdeliStolpec = (stolpecId, znak, opcije)=>{
-    //opcije:
-    /*
-    0: na vse znake
-    1: na prvi znak
-    2: na zadnji znak
-    */
-    //console.log("razdeli: "+stolpecId+" "+znak+" "+opcije);
+    tabPush();
+
+    
+
     let elementiStolpca = tabela.querySelectorAll("td#col_"+stolpecId);
-    for(let i = 0; i < elementiStolpca.length; i++){
-        let vrstica = tabela.querySelector("tr#row_"+i);
-        console.log(vrstica);
-        let element = document.createElement("td");
-        //console.log(element);
-        vrstica.appendChild(element);
-        vrstica.insertBefore(element, elementiStolpca[i+1]);
+    
+    //pridobimo indeks stolpca (na katerem mestu, da vemo, kam dodat nove stolpce)
+    let stolpci = tabela.rows[0].cells;
+    let indeks = 1;
+    //console.log(stolpci);
+    
+    for(let i = 0; i < stolpci.length; i++){
+        if(stolpci[i].id === "col_"+stolpecId){
+            indeks = i;
+            break;
+        }
     }
-    //console.log(elementiStolpca);
+    
+    //console.log(indeks);
+
+    let prviDel = [];
+    let drugiDel = [];
+
+    for(let i = 0; i<  elementiStolpca.length; i++){
+        let inputFi = elementiStolpca[i].querySelector("input");    
+
+        
+        if(inputFi){
+            let podatek = inputFi.value;
+            if(podatek == undefined) continue;
+            //console.log("[" + i + "] " + podatek);
+            let split_index = podatek.indexOf(' ');
+            let el_prviDel = podatek.substring(0, split_index);
+            let el_drugiDel = podatek.substring(split_index+1);
+
+            //console.log(el_prviDel + "  " + el_drugiDel);
+
+            prviDel.push(el_prviDel);
+            drugiDel.push(el_drugiDel);
+        }
+        else{
+            //console.log("[" + i + "] -");
+        }
+    }
+    
+    //vrstni red je pomemben!
+    generirajStolpec(tabela, drugiDel, indeks); //indeks doloci mesto, na katero se doda nov stolpec
+    generirajStolpec(tabela, prviDel, indeks);
+    
+
 };
 
-var tab2JSON = ()=>{
-
+var tab2JSON = (tabela, povratniKlic)=>{
+    let vrni = {};
 
 };
