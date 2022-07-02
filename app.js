@@ -5,9 +5,12 @@ const pb = new sqlite3.Database("baza.sqlite3");
 
 const express = require("express");
 const streznik = express();
+const bodyParser = require('body-parser');
+const { json } = require("body-parser");
 
 streznik.set("view engine", "hbs");
 streznik.use(express.static("public")); //aha kle nastavmo root za staticne datoteke (javascript na odjemalcu, ...)
+streznik.use(bodyParser.json()); //za parsat body //urlencoded({extended:true})
 
 streznik.get("/", (zahteva, odgovor)=>{
 	odgovor.setHeader("Content-Type", "text/html");
@@ -85,6 +88,39 @@ var naDelavnici = (delavnica, datum, povratniKlic)=>{
 		}
 	);
 };
+
+//dodajanje v bazo
+
+streznik.post("/query/dodajJSON/", (zahteva, odgovor)=>{ //"/query/prijavljeni/:delavnica/:datum"
+	//let json_data = JSON.parse(zahteva.body);
+	//console.log(zahteva.body);
+	//console.log(json_data);
+	let json_data = zahteva.body;
+
+	if(json_data.ime != undefined && json_data.priimek != undefined && json_data.starost != undefined){
+		let dolzina = json_data.ime.length;
+		if(dolzina == json_data.priimek.length && dolzina == json_data.starost.length){
+			//dodaj v bazo:
+			for(let i = 0; i < dolzina; i++){
+				console.log(json_data.ime[i] + " " + json_data.priimek[i] + ", starost: " + json_data.starost[i]);
+
+			}
+
+
+
+			odgovor.end("[ok]");
+		}
+		else{
+			odgovor.end("[er] dolzine se ne ujemajo (vsi stolpci morajo imeti enako stevilo podatkov)");
+		}
+	}
+	else{
+		odgovor.end("[er] prejeti podatki nimajo pravilno oznacenih stolpcev.");
+	}
+
+
+	
+});
 
 
 streznik.listen(process.env.PORT, ()=>{

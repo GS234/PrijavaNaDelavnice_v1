@@ -61,7 +61,7 @@ var dodajPodatkeCSV = (file, tab)=>{
         //stolpci
         let controlRow = "<tr>";
         for(let i = 0; i <= colMax; i++){
-            if(i != 0) controlRow = controlRow + dodajKontrolnoCelico(i-1);
+            if(i != 0) controlRow = controlRow + dodajKontrolnoCelico(i-1); //tole treba dodelat (ma ne bomo sam stringov lepil)
             else controlRow = controlRow+ "<td><button onclick='tabelaUndo1()'> <- </button></td>"
         }
         controlRow = controlRow + "</tr>";
@@ -84,13 +84,15 @@ var tabPop = ()=>{
     if(tabelaUndo) tabela.innerHTML = tabelaUndo;
 }
 
-var dodajKontrolnoCelico = (stolpecId)=>{
+var dodajKontrolnoCelico = (stolpecId)=>{ //to je treba spremenit enkrat, da se ne bo sam stringa lepil
     return  "\
         <td id='col_"+(stolpecId)+"'>\
             <button id='"+"btn_"+(stolpecId)+"' onclick='izbrisiStolpec("+(stolpecId)+")'>X</button>\
             <button onclick='razdeliStolpec("+(stolpecId)+", \" \", 0)'><></button>\
             <button onclick='normalizirajStolpec("+(stolpecId)+")'>Aa</button>\
-        </td>"
+            <input type='text' size='4' placeholder='Ime stolpca' value='"+ stolpecId +"'>\
+        </td>";
+        //<input type='text' size='4' placeholder='Ime stolpca' value='"+ stolpecId +"'>\ //tole rabmo, sam je treba dodelat....
 };
 
 var podatkovnaCelica = (stolpecId, podatki)=>{
@@ -106,7 +108,8 @@ var kontrolnaCelica = (stolpecId)=>{
     vrni.innerHTML = 
                 "<button id='"+"btn_"+(stolpecId)+"' onclick='izbrisiStolpec("+(stolpecId)+")'>X</button>\
                 <button onclick='razdeliStolpec("+(stolpecId)+", \" \", 0)'><></button>\
-                <button onclick='normalizirajStolpec("+(stolpecId)+")'>Aa</button>"
+                <button onclick='normalizirajStolpec("+(stolpecId)+")'>Aa</button>\
+                <input type='text' size='4' placeholder='Ime stolpca' value='"+ stolpecId +"'>";
     return vrni;
 };
 
@@ -275,9 +278,6 @@ var izbrisiVrstico = (vrsticaId)=>{
 //rabi se mal razmisleka...
 var razdeliStolpec = (stolpecId, znak, opcije)=>{
     tabPush();
-
-    
-
     let elementiStolpca = tabela.querySelectorAll("td#col_"+stolpecId);
     
     //pridobimo indeks stolpca (na katerem mestu, da vemo, kam dodat nove stolpce)
@@ -297,8 +297,8 @@ var razdeliStolpec = (stolpecId, znak, opcije)=>{
     let prviDel = [];
     let drugiDel = [];
 
-    for(let i = 0; i<  elementiStolpca.length; i++){
-        let inputFi = elementiStolpca[i].querySelector("input");    
+    for(let i = 1; i<  elementiStolpca.length; i++){
+        let inputFi = elementiStolpca[i].querySelector("input"); //tole ne bo vredu  
 
         
         if(inputFi){
@@ -306,8 +306,8 @@ var razdeliStolpec = (stolpecId, znak, opcije)=>{
             if(podatek == undefined) continue;
             //console.log("[" + i + "] " + podatek);
             let split_index = podatek.indexOf(' ');
-            let el_prviDel = podatek.substring(0, split_index);
-            let el_drugiDel = podatek.substring(split_index+1);
+            let el_prviDel = podatek.substring(0, split_index).trim();
+            let el_drugiDel = podatek.substring(split_index+1).trim();
 
             //console.log(el_prviDel + "  " + el_drugiDel);
 
@@ -332,15 +332,17 @@ var tab2JSON = ()=>{
     let stolpci = vrstice[0].cells;
 
     for(let i = 1; i < stolpci.length; i++){
-        let stolpec_i = stolpci[i].id;
+        let stolpec_i = stolpci[i].querySelector("input").value;//stolpci[i].id;
+        //console.log(stolpec_i + " " + stolpci[i].querySelector("input").value); //to je morda zasilna resitev
 
         
-        vrni[stolpec_i] = {};
+        //vrni[stolpec_i] = {};
+        vrni[stolpec_i] = [];
         for(let j = 1; j < vrstice.length; j++){
             let celica = vrstice[j].cells[i];
             if(celica != undefined && celica != null){
                 let input_el = vrstice[j].cells[i].querySelector("input");
-                if(input_el != undefined) vrni[stolpec_i][j] = input_el.value;
+                if(input_el != undefined) vrni[stolpec_i].push(input_el.value); //vrni[stolpec_i][j] = input_el.value; //-> ne rabmo json-a
             }
         }
     }
@@ -352,28 +354,25 @@ var dodajVbazo = ()=>{
     console.log("dodajanje v bazo");
     let podatki = tab2JSON();
     if(podatki != undefined && podatki != null){
-        console.log("[ok] podatki so ok");
+        //console.log("[ok] podatki so ok");
+
+        $.ajax({
+            url: '/query/dodajJSON',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(podatki), //podatki
+
+            success: (response)=>{
+                console.log("[ok] "+response);
+            },
+            error: (napaka)=>{
+                console.log("[er] Prislo je do napake: " + napaka);
+            }
+        });
+
+        
     }
     else{
         console.log("[er] podatki niso ok")
     }
 };
-
-
-/*
-    //else vrstice[0].classList.remove("oznaka");
-    if(vrstice[0].classList.contains("oznaka")) vrstice[0].classList.remove("oznaka");
-    else vrstice[0].classList.add("oznaka");
-
-    for(let i = 0; i < vrstice.length; i++){
-        if(i == 0) continue;
-        let vrstica = vrstice[i];
-        for(let j = i+1; j< vrstice.length; j++){
-            let drugaV = vrstice[j];
-            let aliEnaki = primerjajVrstici(vrstica, drugaV);
-            if(aliEnaki == 1){
-                console.log(vrstica.id + " == " + drugaV.id);
-            }
-        }
-    }
-    */

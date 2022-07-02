@@ -3,11 +3,12 @@
     "description": "Prijava na delavnice",
     "version": "1.0",
     "author": "Gasper Suhadolnik",
-    "dependencies":{
-        "express":"*",
-        "hbs":"*",
-        "formidable":"*",
-        "sqlite3":"*"
+    "dependencies": {
+        "body-parser": "^1.20.0",
+        "express": "*",
+        "formidable": "*",
+        "hbs": "*",
+        "sqlite3": "*"
     },
     "private": true
 }
