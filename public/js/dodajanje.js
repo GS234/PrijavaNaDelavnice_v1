@@ -237,47 +237,24 @@ var prikaziDuplikate = ()=>{
     //lahko se zgodi, da imata dve osebi isto ime in priimek)
     //v takem primeru je smiselno oznaciti eno izmed obeh npr. s stevilko
     let vrstice = tabela.rows;
-    
-    //else vrstice[0].classList.remove("oznaka");
-    if(vrstice[0].classList.contains("oznaka")) vrstice[0].classList.remove("oznaka");
-    else vrstice[0].classList.add("oznaka");
-    /*
-    for(let i = 0; i < vrstice.length; i++){
-        if(i == 0) continue;
-        let vrstica = vrstice[i];
-        for(let j = i+1; j< vrstice.length; j++){
-            let drugaV = vrstice[j];
-            let aliEnaki = primerjajVrstici(vrstica, drugaV);
-            if(aliEnaki == 1){
-                console.log(vrstica.id + " == " + drugaV.id);
-            }
+    let unikati = [];
+
+    for(let i = 1; i < vrstice.length; i++){
+        let polja = vrstice[i].querySelectorAll("input");
+        let vsebina = "";
+        for(let j = 0; j < polja.length; j++){
+            vsebina = vsebina + polja[j].value;
+        }
+        if(unikati.indexOf(vsebina) == -1){
+            unikati.push(vsebina);
+            vrstice[i].classList.remove("oznaka");
+        }
+        else{
+            vrstice[i].classList.add("oznaka");
         }
     }
-    */
 };
 
-var primerjajVrstici = (prva, druga)=>{
-    /*
-    let celice1 = prva.querySelectorAll("td");
-    let celice2 = druga.querySelectorAll("td");
-
-    if(celice1.length != celice2.length) return 0;
-    let n = celice1.length;
-    //console.log(celice1);
-    //console.log(celice2);
-    console.log(1);
-    for(let i =0 ; i <n; i++){
-        //console.log(celice1[i].innerHTML + " ?= " + celice2[i].innerHTML);
-        if(celice1[i].innerHTML != celice2[i].innerHTML){
-            return 0;
-        }
-    }
-    
-    console.log(celice1[i].innerHTML + ", " + celice2[i].innerHTML);
-    return 1;
-    */
-   return 0;
-};
 
 
 var izbrisiStolpec = (stolpecId)=>{
@@ -349,7 +326,54 @@ var razdeliStolpec = (stolpecId, znak, opcije)=>{
 
 };
 
-var tab2JSON = (tabela, povratniKlic)=>{
+var tab2JSON = ()=>{
     let vrni = {};
+    let vrstice = tabela.rows;
+    let stolpci = vrstice[0].cells;
 
+    for(let i = 1; i < stolpci.length; i++){
+        let stolpec_i = stolpci[i].id;
+
+        
+        vrni[stolpec_i] = {};
+        for(let j = 1; j < vrstice.length; j++){
+            let celica = vrstice[j].cells[i];
+            if(celica != undefined && celica != null){
+                let input_el = vrstice[j].cells[i].querySelector("input");
+                if(input_el != undefined) vrni[stolpec_i][j] = input_el.value;
+            }
+        }
+    }
+    console.log(vrni);
+    return vrni;
 };
+
+var dodajVbazo = ()=>{
+    console.log("dodajanje v bazo");
+    let podatki = tab2JSON();
+    if(podatki != undefined && podatki != null){
+        console.log("[ok] podatki so ok");
+    }
+    else{
+        console.log("[er] podatki niso ok")
+    }
+};
+
+
+/*
+    //else vrstice[0].classList.remove("oznaka");
+    if(vrstice[0].classList.contains("oznaka")) vrstice[0].classList.remove("oznaka");
+    else vrstice[0].classList.add("oznaka");
+
+    for(let i = 0; i < vrstice.length; i++){
+        if(i == 0) continue;
+        let vrstica = vrstice[i];
+        for(let j = i+1; j< vrstice.length; j++){
+            let drugaV = vrstice[j];
+            let aliEnaki = primerjajVrstici(vrstica, drugaV);
+            if(aliEnaki == 1){
+                console.log(vrstica.id + " == " + drugaV.id);
+            }
+        }
+    }
+    */
