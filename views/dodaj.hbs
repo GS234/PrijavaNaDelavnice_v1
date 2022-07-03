@@ -1,20 +1,47 @@
 <div class="dodajPodatke">
     <h1>Dodajanje podatkov</h1>
-    <hr>
-    <span>Encoding: </span><input id="file_encoding" type="text" placeholder="encoding" value="windows-1250">
-    <input type="file" id="datoteka_izbira" accept=".csv">
     
-    <hr>
-    <table id="tabela_glavna" hidden></table>
-    <hr>
+    <div>
+        <h2>Dodaj iz datoteke</h2>
+        <hr>
+        <span>Encoding: </span><input id="file_encoding" type="text" placeholder="encoding" value="windows-1250">
+        <input type="file" id="datoteka_izbira" accept=".csv">
 
-    
-    <button onclick="dodajPrazno()">Dodaj prazno</button>
-    <button onclick="izbrisiPrazne()">Izbriši prazne vrstice</button>
-    <button onclick="prikaziDuplikate()">Označi duplikate</button>
-    <button onclick="dodajVbazo()">Dodaj v bazo</button>
-    <button onclick="tab2JSON()">Generiraj json (testiranje)</button>
-        
-    
+        <hr>
+        <table id="tabela_glavna" hidden></table>
+        <hr>
+
+
+        <button onclick="dodajPrazno()">Dodaj prazno</button>
+        <button onclick="izbrisiPrazne()">Izbriši prazne vrstice</button>
+        <button onclick="prikaziDuplikate()">Označi duplikate</button>
+        <button onclick="dodajTabVbazo()">Dodaj v bazo</button>
+        <button onclick="tab2JSON()">Generiraj json (testiranje)</button>
+    </div>
+
+    <div>
+        <h2>Dodaj ročno</h2>
+        <span>Udeleženci</span>
+        <input type="text" id="inputm_ime" placeholder="ime">
+        <input type="text" id="inputm_priimek" placeholder="priimek">
+        <input type="text" id="inputm_starost" placeholder="starost">
+        <button id="sumbitm_udelezenec" onclick="dodajUdelezenca()">Dodaj</button>
+        <br>
+        <span>Delavnica &nbsp;</span>
+        <input type="text" id="inputm_delavnicaID" placeholder="ime delavnice">
+        <input type="text" id="inputm_omejitev" placeholder="št. mest">
+        <button id="submitm_delavnica" onclick="dodajDelavnico()">Dodaj</button>
+
+    </div>
+
+    <div>
+        <h1>Brisanje podatkov</h1>
+    	<button id="db_reset" onclick="dbReset()">Izbrisi vse podatke</button>
+
+        <button onclick="datadel_getData" onclick="" hidden>Pridobi podatke</button> <!-- tale gumb napolni podatke v seznam, kjer se nahajajo vsi podatki iz pb o udelezencih in delavnicah (2 seznama) -->
+        <li hidden></li> <!-- rabmo id-je -->
+        <ul hidden></ul>
+    </div>
+
 </div>
 <script src="/js/dodajanje.js"></script>

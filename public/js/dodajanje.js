@@ -175,6 +175,10 @@ var normalizirajStolpec = (stolpecId)=>{
 }
 
 var dodajPrazno = ()=>{
+    if(tabela.innerHTML == ""){
+        console.log("[er] tabela nima podatkov");
+        return;
+    }
     tabPush();
     //na konec doda prazno vrstico
     let vrstice = tabela.rows;
@@ -208,6 +212,10 @@ var dodajPrazno = ()=>{
 
 //to je treba se mal pregledat
 var izbrisiPrazne = ()=>{
+    if(tabela.innerHTML == ""){
+        console.log("[er] tabela nima podatkov");
+        return;
+    }
     tabPush();
     //izbrise prazne vrstice
     let vrstice = tabela.rows;
@@ -236,6 +244,10 @@ var izbrisiPrazne = ()=>{
 };
 
 var prikaziDuplikate = ()=>{
+    if(tabela.innerHTML == ""){
+        console.log("[er] tabela nima podatkov");
+        return;
+    }
     //oznaci vrstice, ki vsebujejo iste podatke (odločitev na strani vpisovalca;
     //lahko se zgodi, da imata dve osebi isto ime in priimek)
     //v takem primeru je smiselno oznaciti eno izmed obeh npr. s stevilko
@@ -326,7 +338,11 @@ var razdeliStolpec = (stolpecId, znak, opcije)=>{
 
 };
 
-var tab2JSON = ()=>{
+var tab2JSON = (povratniKlic)=>{
+    if(tabela.innerHTML == ""){
+        console.log("[er] tabela nima podatkov");
+        return undefined;
+    }
     let vrni = {};
     let vrstice = tabela.rows;
     let stolpci = vrstice[0].cells;
@@ -346,33 +362,119 @@ var tab2JSON = ()=>{
             }
         }
     }
-    console.log(vrni);
+    //console.log(vrni);
+    povratniKlic(vrni);
     return vrni;
 };
 
-var dodajVbazo = ()=>{
-    console.log("dodajanje v bazo");
-    let podatki = tab2JSON();
-    if(podatki != undefined && podatki != null){
-        //console.log("[ok] podatki so ok");
+var dbReset = ()=>{
+    //console.log(prompt("ali res zelite izbrisati vse podatke?"));
+    if(confirm("Ali res želiš izbrisati vse podatke iz baze?")){
+        if(prompt("za nadaljevanje vnesite niz POTRDI") === "POTRDI"){
+            console.log("izbrisi");
+            $.get("/query/resetDB/");
+        }
+        else{
+            console.log("ni izbrisano");
+            return;
+        }
+    }
+    else{
+        console.log("ni izbrisano");
+    }
+};
 
+var dodajTabVbazo = ()=>{
+    tab2JSON((data)=>{
+        //preveri  veljavnost podatkov!!!!!!!!!!!
+        if(data.ime && data.priimek && data.starost) dodajVbazo(data, "udelezenci", null, (tip, msg)=>{izpisiResponse(tip, msg)});
+        else izpisiResponse(0, "Stolpci so neustrezni!");
+    });
+    //dodajVbazo(tab2JSON(), "udelezenci");
+};
+
+var dodajUdelezenca = ()=>{
+    let inputm_ime = document.getElementById("inputm_ime"); //inputm_priimek
+    let inputm_priimek = document.getElementById("inputm_priimek");
+    let inputm_starost = document.getElementById("inputm_starost"); //inputm_priimek
+
+    let ime = inputm_ime.value;
+    let priimek = inputm_priimek.value;
+    let starost = inputm_starost.value;
+
+    let podatki_send =     
+    {
+        ime:[ime],
+        priimek:[priimek],
+        starost:[starost]
+    }
+    if(ime && priimek && starost) dodajVbazo(podatki_send, "udelezenci", 2, (tip, msg)=>izpisiResponse(tip, msg));
+    else izpisiResponse(0, "Vnesi vse podatke!");
+};
+
+var dodajDelavnico = ()=>{
+    let inputm_delavnicaID = document.getElementById("inputm_delavnicaID");
+    let inputm_omejitev = document.getElementById("inputm_omejitev");
+    //fajn bi blo met tudi starostno omejitev (treba dodat samo en dodaten atribut + primerjava + ...)
+
+    let delavnicaID = inputm_delavnicaID.value;
+    let stMest = inputm_omejitev.value;
+    if(delavnicaID && stMest) dodajVbazo({naziv:[delavnicaID],st_mest:[stMest]}, "delavnice", 2, (tip, msg)=>izpisiResponse(tip, msg))
+    else izpisiResponse(0, "Vnesi vse podatke!");
+};
+
+var izpisiResponse = (tip, msg)=>{
+    if(tip){
+        console.log("[ok] podatki so bili uspesno dodani ("+msg+")");
+    }
+    else{
+        console.log("[er] " + msg);
+    }
+};
+
+var dodajVbazo = (podatki_json, tabela, tip, povratniKlic)=>{    
+    if(podatki_json == undefined || tabela == undefined){
+        //console.log("[er] podatki niso definirani");
+        povratniKlic(0, "podatki niso definirani");
+        return;
+    }
+
+    if(podatki_json != undefined && podatki_json != null){
         $.ajax({
             url: '/query/dodajJSON',
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify(podatki), //podatki
-
+            data: JSON.stringify(
+                {
+                    options:{table:tabela, type:tip}, //opcije
+                    data: podatki_json //podatki
+                }
+            ),
             success: (response)=>{
-                console.log("[ok] "+response);
+                //console.log("[ok] " + response);
+                povratniKlic(1, response);
             },
             error: (napaka)=>{
-                console.log("[er] Prislo je do napake: " + napaka);
+                //console.log("[er] Prislo je do napake: " + napaka);
+                povratniKlic(0, napaka);
             }
         });
-
-        
     }
     else{
-        console.log("[er] podatki niso ok")
+        //console.log("[er] podatki niso ok");
+        povratniKlic(0, "podatki niso ok");
     }
 };
+
+
+/*
+zgradba poslanih podatkov na streznik:
+
+{
+    options: {table:<tabela>, type:<tip>}
+    data: {<podatki>}
+}
+
+options: vsebuje opcije za nastavitev nacina vnosa in podatek o tabeli, v katero se dodaja (tip: 0->vse naenkrat, 1->vsakega posebi)
+data: vsebuje kljuce, ki so enakih imen kot stolpci, pod kljuci pa so podatki o celicah
+*/
