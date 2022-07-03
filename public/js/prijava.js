@@ -77,5 +77,26 @@ window.addEventListener('load', ()=>{
         //datum_input
         datum_text.hidden = true;
         //datum_input.value = datum_text.innerHTML;
-    });    
+    });
+    
+    let input_prijava = document.getElementById("input_prijava");
+    let udelezenci_seznam = document.getElementById("udelezenci_seznam");
+    let vsiUdelezenci = udelezenci_seznam.querySelectorAll("li");
+
+    /*
+    input_prijava.addEventListener('blur', ()=>{
+        for(let i = 0; i < vsiUdelezenci.length; i++){
+            vsiUdelezenci[i].hidden = false; //vse pokazemo
+        }
+    });
+    */
+
+    input_prijava.addEventListener('input', ()=>{
+        let value = input_prijava.value;
+        for(let i = 0; i< vsiUdelezenci.length; i++){
+            let udelezenec_i = vsiUdelezenci[i];
+            if((udelezenec_i.innerText.toUpperCase()).indexOf(value.toUpperCase()) != -1) udelezenec_i.hidden = false;
+            else udelezenec_i.hidden = true;
+        }
+    });
 });

@@ -31,7 +31,14 @@
     <div>
         <h2>Prijavi udeleženca</h2>
         <div id="prijava_polje">
-            <p style="color:rgba(158, 158, 158, 0.725)">!!!potrebna implementacija!!!</p>
+            <!-- <p style="color:rgba(158, 158, 158, 0.725)">!!!potrebna implementacija!!!</p> -->
+            <input id="input_prijava" type="text" placeholder="išči">
+            <button onclick="">Prijavi</button>
+            <ol id="udelezenci_seznam">
+                {{#each udelezenci_seznam as |udelezenec|}}
+                <li>{{udelezenec.ime}} {{udelezenec.priimek}} ({{udelezenec.starost}})</li>
+                {{/each}}
+            </ol>
         </div>
     </div>
 

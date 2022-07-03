@@ -25,20 +25,60 @@ streznik.get("/prijava/dodaj", (zahteva, odgovor) => {
 
 streznik.get("/prijava/", (zahteva, odgovor) => {
 	//tuki se bo izvedla poizvedba na bazo, izpis bo su na aplikacijo (metoda get)
+	
+	//odgovor.sendStatus(500);
+	//odgovor.end(napaka);
 
-	pb.all("select * from Delavnice", (napaka, vrstice) => {
-		if (napaka) {
+	//odgovor.setHeader("Content-Type", "text/html");
+	//odgovor.render("prijava", { delavnice_seznam: vrstice });//["prva", "druga", "tretja"]});
+	getDelavnice((statusDel, delavnice)=>{
+		if(statusDel){
+			getUdelezenci((statusUdelez, udelezenci)=>{
+				if(statusUdelez){
+					odgovor.setHeader("Content-Type", "text/html");
+					odgovor.render("prijava", { delavnice_seznam: delavnice, udelezenci_seznam: udelezenci });
+				}
+				else{
+					odgovor.sendStatus(500);
+					odgovor.end(udelezenci);
+				}
+			});
+		}
+		else{
 			odgovor.sendStatus(500);
-			//odgovor.end(napaka);
-			console.log(napaka);
+			odgovor.end(delavnice);
 		}
-		else {
-			odgovor.setHeader("Content-Type", "text/html");
-			odgovor.render("prijava", { delavnice_seznam: vrstice });//["prva", "druga", "tretja"]});
-		}
-	});
+	})
+
+
 });
 //streznik.get("/prijava/dodaj");
+
+var getDelavnice = (povratniKlic)=>{
+	pb.all("select * from Delavnice", (napaka, vrstice) => {
+		if (napaka) {
+			console.log(napaka);
+			povratniKlic(0, "Napaka pri zajemu delavnic");
+		}
+		else {
+			povratniKlic(1, vrstice);
+		}
+	});
+}
+
+var getUdelezenci = (povratniKlic)=>{
+	pb.all("select * from Udelezenci", (napaka, vrstice) => {
+		if (napaka) {
+			console.log(napaka);
+			povratniKlic(0, "Napaka pri zajemu udelezencev");
+		}
+		else {
+			povratniKlic(1, vrstice);
+		}
+	});
+}
+
+
 
 
 //opravki z bazo:
