@@ -26,7 +26,8 @@ let izberiDelavnico = (delavnica)=>{
                     //akcija
                     for(let i = 0; i < pod.length; i++){
                         let pod_i = pod[i];
-                        seznamPrijavljenih.innerHTML += "<li>"+pod_i.ime+" "+pod_i.priimek+" -> "+pod_i.naziv+" "+"</li>"
+                        seznamPrijavljenih.innerHTML += "<li>"+pod_i.ime+" "+pod_i.priimek+" -> "+pod_i.naziv+" "+
+                                                        "<button onclick=\"odjaviUdelezenca('"+ pod_i.ime +"', '"+ pod_i.priimek +"','"+ delavnica +"','"+datum_input.value+"')\">X</button>"+"</li>";
                     }
                 }
             });
@@ -43,6 +44,80 @@ var datum2Text = (datum)=>{
     let d = datum.split("-");
     return parseInt(d[2]) + ". " + parseInt(d[1]) + ". " + d[0];
 }
+
+var izberiUdelezenca = (ime, priimek, starost)=>{
+    let prijavi_ime = document.getElementById("prijavi_ime");
+    let prijavi_priimek = document.getElementById("prijavi_priimek");
+    let prijavi_starost = document.getElementById("prijavi_starost");
+
+    prijavi_ime.innerText = ime;
+    prijavi_priimek.innerText = priimek;
+    prijavi_starost.innerText = starost;
+
+    document.getElementById("input_prijava").value = ime + " " + priimek;
+};
+
+var izberiDelavnicoPrijava = (delavnica)=>{
+    let prijavaDel = document.getElementById("input_prijavaDel");
+    let prijavi_del = document.getElementById("prijavi_del");
+    //console.log(delavnica);
+    prijavi_del.innerText = delavnica;
+    prijavaDel.value = delavnica;
+};
+
+var prijaviUdelezenca = ()=>{
+    let ime_el = document.getElementById("prijavi_ime");
+    let priimek_el = document.getElementById("prijavi_priimek");
+    let starost_el = document.getElementById("prijavi_starost");
+    let delavnica_el = document.getElementById("prijavi_del");
+
+    let ime = ime_el.innerText;
+    let priimek = priimek_el.innerText;
+    let starost = starost_el.innerText;
+    let delavnica = delavnica_el.innerText;
+
+    if(ime && priimek && starost && delavnica){
+        console.log(ime + " " + priimek + " " + starost + " -> " + delavnica);
+        ime_el.innerHTML = priimek_el.innerHTML = starost_el.innerHTML = delavnica_el = "";
+        
+        
+        $.get("/query/prijavi/"+ime+"/"+priimek+"/"+delavnica+"/"+datum_input.value+"/", (podatki)=>{
+            console.log(podatki);
+            izpisiStanje(2, podatki); //server response
+            //update delavnice
+            if(delavnica_izbrana.innerHTML == delavnica){
+                izberiDelavnico(delavnica);
+            }
+        });
+        //ce gre skoz, poglej, katera delavnica je izbrana in če sovpada, potem dodaj gor.
+    }
+    else{
+        izpisiStanje(1, "[cli] vnesi vse podatke");
+        console.log("[er] vnesi vse podatke");
+    }
+};
+
+var odjaviUdelezenca = (ime, priimek, delavnica, datum)=>{
+    var niz = "odjavi: " + ime + " " + priimek + " " + delavnica + " " + datum;
+    //console.log(niz);
+    izpisiStanje(0, niz);
+    $.get("/query/odjavi/"+ime+"/"+priimek+"/"+delavnica+"/"+datum_input.value+"/", (podatki)=>{
+        izberiDelavnico(delavnica); //lahko bi se ugotovil prej, ali gre za error al za ok, ampak ok
+        izpisiStanje(2, podatki);
+        console.log(podatki);
+    });
+};
+
+
+var izpisiStanje = (tip, sporocilo)=>{
+    var prijava_response = document.getElementById("prijava_response");
+    if(tip == 0) prijava_response.innerHTML = "[ok] " + sporocilo;
+    else if(tip == 2) prijava_response.innerHTML = "[server] " + sporocilo;
+    else prijava_response.innerHTML = "[er] " + sporocilo;
+}
+
+
+
 
 window.addEventListener('load', ()=>{
     //console.log("javascript test (prijava.js)");

@@ -30,15 +30,32 @@
     <!-- polje za prijavo -->
     <div>
         <h2>Prijavi udeleženca</h2>
+        <span id="prijava_response"></span>
         <div id="prijava_polje">
             <!-- <p style="color:rgba(158, 158, 158, 0.725)">!!!potrebna implementacija!!!</p> -->
             <input id="input_prijava" type="text" placeholder="išči">
-            <button onclick="">Prijavi</button>
-            <ol id="udelezenci_seznam">
-                {{#each udelezenci_seznam as |udelezenec|}}
-                <li>{{udelezenec.ime}} {{udelezenec.priimek}} ({{udelezenec.starost}})</li>
-                {{/each}}
-            </ol>
+            <input id="input_prijavaDel" type="text" placeholder="delavnica">
+            <button onclick="prijaviUdelezenca()">Prijavi</button>
+            <div>
+                <span id="prijavi_ime"></span>
+                <span id="prijavi_priimek"></span>
+                <span id="prijavi_starost"></span>
+                <span> -> </span>
+                <span id="prijavi_del"></span>
+            </div>
+
+            <div>
+                <ol id="udelezenci_seznam" style="float:left;"> <!-- list-style-type: none; display: inline-block; zoom:1; *display: inline; _height: 30px; -->
+                    {{#each udelezenci_seznam as |udelezenec|}}
+                    <li><button onclick="izberiUdelezenca('{{udelezenec.ime}}','{{udelezenec.priimek}}','{{udelezenec.starost}}')" >{{udelezenec.ime}} {{udelezenec.priimek}} ({{udelezenec.starost}})</button></li>
+                    {{/each}}
+                </ol>
+                <ul> <!-- style="list-style-type: none; display: inline-block; zoom:1; *display: inline; _height: 30px;" -->
+                    {{#each delavnice_seznam as |delavnica|}}
+                    <li><button class="gumb2" onclick="izberiDelavnicoPrijava('{{delavnica.naziv}}')">{{delavnica.naziv}}</button></li>
+                    {{/each}}
+                </ul>
+            </div>
         </div>
     </div>
 
