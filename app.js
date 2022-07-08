@@ -78,9 +78,6 @@ var getUdelezenci = (povratniKlic) => {
 	});
 }
 
-
-
-
 //opravki z bazo:
 streznik.get("/query/prijavljeni/:delavnica/:datum", (zahteva, odgovor) => { //"/query/prijavljeni/:delavnica/:datum"
 	//console.log(zahteva.params.delavnica);
@@ -138,7 +135,7 @@ var naDelavnici = (delavnica, datum, povratniKlic) => {
 	);
 };
 
-streznik.get("/query/prijavi/:ime/:priimek/:delavnica/:datum", (zahteva, odgovor) => {
+streznik.get("/query/prijavi/:ime/:priimek/:delavnica/:datum/:override", (zahteva, odgovor) => {
 	//TODO
 	//pri prijavi je treba:
 	/*
@@ -155,6 +152,7 @@ streznik.get("/query/prijavi/:ime/:priimek/:delavnica/:datum", (zahteva, odgovor
 	let priimek = zahteva.params.priimek;
 	let delavnica = zahteva.params.delavnica;
 	let datum = zahteva.params.datum;
+	let override = (zahteva.params.override == "true")?1:0; //ce zelis vpisati brez omejitev
 
 
 	pb.all("SELECT ID_udelezenca FROM Udelezenci WHERE ime = '" + ime + "' AND priimek = '" + priimek + "';", (napaka, vrstice) => {
@@ -175,7 +173,7 @@ streznik.get("/query/prijavi/:ime/:priimek/:delavnica/:datum", (zahteva, odgovor
 					let id_del = parseInt(vrstice[0].ID_delavnice);
 					//console.log(id_udel + " " + id_del);
 					veljavno(id_udel, id_del, datum, (koda) => {
-						if (koda == 0 || (koda == 2 && 0)) { //tuki dopusti tudi moznost prisilne prijave v primeru, ko je koda 2 in je override na 1 (za posebne primere)
+						if (koda == 0 || override) { //tuki dopusti tudi moznost prisilne prijave v primeru, ko je koda 2 in je override na 1 (za posebne primere) //(koda == 2 && 0)
 							pb.run("INSERT INTO Prijava (ID_udelezenca, ID_delavnice, datum) VALUES ('" + id_udel + "','" + id_del + "','" + datum + "');", (napaka) => {
 								if (napaka) {
 									console.log(napaka);
@@ -193,7 +191,7 @@ streznik.get("/query/prijavi/:ime/:priimek/:delavnica/:datum", (zahteva, odgovor
 								console.log("[er] udelezenec je ze bil na delavnici");
 								odgovor.end("[er] udelezenec je ze bil na delavnici");
 							}
-							else if (koda == 1) { //tuki neki ne dela (1) !!!
+							else if (koda == 1) {
 								console.log("[er] udelezenec je ze bil danes vpisan na delavnico");
 								odgovor.end("[er] udelezenec je ze bil danes vpisan na delavnico");
 							}
@@ -311,7 +309,6 @@ var vrniVpisaneNaDel = (ID_del, datum, povratniKlic) => {
 		});
 };
 
-
 //funkcija izpise porocilo z delavnic
 streznik.get("/query/porocilo/:datum", (zahteva, odgovor) => {
 	//pridobi vse ID_je delavnice, za vsakega pridobi udelezenca, nato pa zgeneriraj
@@ -320,24 +317,26 @@ streznik.get("/query/porocilo/:datum", (zahteva, odgovor) => {
 	getDelavnice((tip, vrstice) => {
 		if (tip == 0) odgovor.end("napaka");
 		else {
-			//for(let i = 0; i < vrstice.length; i++){
-				/*
-				let i = 0;
-				vrniVpisaneNaDel(vrstice[i].ID_delavnice, datum, (podatki)=>{
-					console.log(vrstice[i].naziv + ":");
-					console.log(podatki);
-					vrniVpisaneNaDel(vrstice[i+1].ID_delavnice, datum, (podatki)=>{
-
-					});
-				});
+			let podatkiJSON = {};
+			for(let i = 0; i < vrstice.length; i++){
+				//podatkiTab[i] = vrstice[i].naziv;
+				vrniVpisaneNaDel(vrstice[i].ID_delavnice, datum, (vpisani)=>{
+					if(vpisani != -1){
+						let seznam = [];
+						for(let j = 0; j < vpisani.length; j++){
+							//console.log(vpisani[j].ime + " " + vpisani[j].priimek);
+							seznam.push((vpisani[j].ime + " " + vpisani[j].priimek));  //"a";//JSON.stringify(vpisani);
+						}
+						podatkiJSON[vrstice[i].naziv] = seznam;
+					}
+				})
 			}
-			*/
-			odgovor.end("mfw");
+
+			
+			odgovor.render("porocilo", {delavnice:vrstice, podatki: podatkiJSON});
 		}
 	});
 });
-
-
 
 streznik.get("/query/odjavi/:ime/:priimek/:delavnica/:datum", (zahteva, odgovor) => {
 	//console.log(zahteva.params.ime + " " + zahteva.params.priimek + " " + zahteva.params.delavnica + " " + zahteva.params.datum);
@@ -380,7 +379,6 @@ streznik.get("/query/odjavi/:ime/:priimek/:delavnica/:datum", (zahteva, odgovor)
 	});
 	//odgovor.end("[ok]");
 });
-
 
 streznik.post("/query/dodajJSON/", (zahteva, odgovor) => { //"/query/prijavljeni/:delavnica/:datum"
 	let json_data = zahteva.body;
@@ -429,7 +427,6 @@ streznik.post("/query/dodajJSON/", (zahteva, odgovor) => { //"/query/prijavljeni
 	);
 	//----------------------------------
 });
-
 
 streznik.listen(process.env.PORT, () => {
 	console.log("Streznik laufa");

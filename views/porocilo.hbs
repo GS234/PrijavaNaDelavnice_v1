@@ -1,3 +1,12 @@
 <div>
-    {{}} <!--  -->
+    {{#each podatki as |pod|}}
+        {{#if pod.length}}
+        <ol>
+            <b>{{@key}}:</b>
+                {{#each this as |udelezenec|}}
+                    <li>{{udelezenec}}</li>
+                {{/each}}
+        </ol>
+        {{/if}}
+    {{/each}}
 </div>

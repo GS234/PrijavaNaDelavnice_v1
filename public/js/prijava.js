@@ -70,6 +70,7 @@ var prijaviUdelezenca = ()=>{
     let priimek_el = document.getElementById("prijavi_priimek");
     let starost_el = document.getElementById("prijavi_starost");
     let delavnica_el = document.getElementById("prijavi_del");
+    let input_override = document.getElementById("input_override");
 
     let ime = ime_el.innerText;
     let priimek = priimek_el.innerText;
@@ -81,7 +82,7 @@ var prijaviUdelezenca = ()=>{
         ime_el.innerHTML = priimek_el.innerHTML = starost_el.innerHTML = delavnica_el = "";
         
         
-        $.get("/query/prijavi/"+ime+"/"+priimek+"/"+delavnica+"/"+datum_input.value+"/", (podatki)=>{
+        $.get("/query/prijavi/"+ime+"/"+priimek+"/"+delavnica+"/"+datum_input.value+"/"+input_override.checked+"/", (podatki)=>{
             console.log(podatki);
             izpisiStanje(2, podatki); //server response
             //update delavnice
@@ -182,4 +183,12 @@ window.addEventListener('load', ()=>{
             else udelezenec_i.hidden = true;
         }
     });
+
+    /*
+    let input_override = document.getElementById("input_override");
+    input_override.addEventListener("input", ()=>{
+        console.log(input_override.checked);
+    });
+    */
+
 });
