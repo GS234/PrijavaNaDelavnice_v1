@@ -25,26 +25,26 @@ streznik.get("/prijava/dodaj", (zahteva, odgovor) => {
 
 streznik.get("/prijava/", (zahteva, odgovor) => {
 	//tuki se bo izvedla poizvedba na bazo, izpis bo su na aplikacijo (metoda get)
-	
+
 	//odgovor.sendStatus(500);
 	//odgovor.end(napaka);
 
 	//odgovor.setHeader("Content-Type", "text/html");
 	//odgovor.render("prijava", { delavnice_seznam: vrstice });//["prva", "druga", "tretja"]});
-	getDelavnice((statusDel, delavnice)=>{
-		if(statusDel){
-			getUdelezenci((statusUdelez, udelezenci)=>{
-				if(statusUdelez){
+	getDelavnice((statusDel, delavnice) => {
+		if (statusDel) {
+			getUdelezenci((statusUdelez, udelezenci) => {
+				if (statusUdelez) {
 					odgovor.setHeader("Content-Type", "text/html");
 					odgovor.render("prijava", { delavnice_seznam: delavnice, udelezenci_seznam: udelezenci });
 				}
-				else{
+				else {
 					odgovor.sendStatus(500);
 					odgovor.end(udelezenci);
 				}
 			});
 		}
-		else{
+		else {
 			odgovor.sendStatus(500);
 			odgovor.end(delavnice);
 		}
@@ -54,7 +54,7 @@ streznik.get("/prijava/", (zahteva, odgovor) => {
 });
 //streznik.get("/prijava/dodaj");
 
-var getDelavnice = (povratniKlic)=>{
+var getDelavnice = (povratniKlic) => {
 	pb.all("select * from Delavnice", (napaka, vrstice) => {
 		if (napaka) {
 			console.log(napaka);
@@ -66,7 +66,7 @@ var getDelavnice = (povratniKlic)=>{
 	});
 }
 
-var getUdelezenci = (povratniKlic)=>{
+var getUdelezenci = (povratniKlic) => {
 	pb.all("select * from Udelezenci", (napaka, vrstice) => {
 		if (napaka) {
 			console.log(napaka);
@@ -138,66 +138,70 @@ var naDelavnici = (delavnica, datum, povratniKlic) => {
 	);
 };
 
-streznik.get("/query/prijavi/:ime/:priimek/:delavnica/:datum", (zahteva, odgovor)=>{
+streznik.get("/query/prijavi/:ime/:priimek/:delavnica/:datum", (zahteva, odgovor) => {
 	//TODO
 	//pri prijavi je treba:
-		/*
-		preveri, ali je otrok ze bil vpisan na delavnico (dodaj override button za primere, ko kljub
-			temu, da je nekdo ze bil vpisan, aplikacija dovoli dvojni vpis (bratci/sestrice/, ... (ostale anomalije)))
+	/*
+	preveri, ali je otrok ze bil vpisan na delavnico (dodaj override button za primere, ko kljub
+		temu, da je nekdo ze bil vpisan, aplikacija dovoli dvojni vpis (bratci/sestrice/, ... (ostale anomalije)))
 
-		preveri, ali je na delavnici se dovolj prostora
-			-> ce je dovolj, potem ga prijavi!
-			-> drugace pa ga ne prijavi, vrni napako
+	preveri, ali je na delavnici se dovolj prostora
+		-> ce je dovolj, potem ga prijavi!
+		-> drugace pa ga ne prijavi, vrni napako
 
-	*/
+*/
 
 	let ime = zahteva.params.ime;
 	let priimek = zahteva.params.priimek;
 	let delavnica = zahteva.params.delavnica;
 	let datum = zahteva.params.datum;
-	
-	
-	pb.all("SELECT ID_udelezenca FROM Udelezenci WHERE ime = '"+ime+"' AND priimek = '"+priimek+"';", (napaka, vrstice)=>{
-		if(napaka){
+
+
+	pb.all("SELECT ID_udelezenca FROM Udelezenci WHERE ime = '" + ime + "' AND priimek = '" + priimek + "';", (napaka, vrstice) => {
+		if (napaka) {
 			console.log(napaka);
 			odgovor.end("[er] napaka1 (id udelezenca neznan)");
 		}
-		else{
+		else {
 			let id_udel = vrstice[0].ID_udelezenca;
 			//console.log(id_udel);
 
-			pb.all("SELECT ID_delavnice FROM Delavnice WHERE naziv = '"+delavnica+"'", (napaka, vrstice)=>{
-				if(napaka){
+			pb.all("SELECT ID_delavnice FROM Delavnice WHERE naziv = '" + delavnica + "'", (napaka, vrstice) => {
+				if (napaka) {
 					console.log(napaka);
 					odgovor.end("[er] napaka2 (id delavnice neznan)");
 				}
-				else{
+				else {
 					let id_del = parseInt(vrstice[0].ID_delavnice);
 					//console.log(id_udel + " " + id_del);
-					veljavno(id_udel, id_del, datum, (koda)=>{
-						if(koda == 0 || (koda == 2 && 0)){ //tuki dopusti tudi moznost prisilne prijave v primeru, ko je koda 2 in je override na 1 (za posebne primere)
-							pb.run("INSERT INTO Prijava (ID_udelezenca, ID_delavnice, datum) VALUES ('"+id_udel+"','"+id_del+"','"+datum+"');", (napaka)=>{
-								if(napaka){
+					veljavno(id_udel, id_del, datum, (koda) => {
+						if (koda == 0 || (koda == 2 && 0)) { //tuki dopusti tudi moznost prisilne prijave v primeru, ko je koda 2 in je override na 1 (za posebne primere)
+							pb.run("INSERT INTO Prijava (ID_udelezenca, ID_delavnice, datum) VALUES ('" + id_udel + "','" + id_del + "','" + datum + "');", (napaka) => {
+								if (napaka) {
 									console.log(napaka);
 									odgovor.end("[er] napaka pri vnosu");
 								}
-								else{
+								else {
 									console.log("[ok] vpisano");
 									odgovor.end("-> [ok] pravilen vnos");
 								}
 							});
 						}
 
-						else{
-							if(koda == 2){
+						else { //error handling
+							if (koda == 2) {
 								console.log("[er] udelezenec je ze bil na delavnici");
 								odgovor.end("[er] udelezenec je ze bil na delavnici");
 							}
-							if(koda == 1){ //tuki neki ne dela (1)
+							else if (koda == 1) { //tuki neki ne dela (1) !!!
 								console.log("[er] udelezenec je ze bil danes vpisan na delavnico");
 								odgovor.end("[er] udelezenec je ze bil danes vpisan na delavnico");
 							}
-							else{
+							else if (koda == 3) {
+								console.log("[er] udelezenec ni vpisan, ker je stevilo mest na delavnici ze zapolnjeno")
+								odgovor.end("[er] preveliko stevilo vpisov");
+							}
+							else {
 								console.log("[er] neznana napaka (koda -1)");
 								odgovor.end("[er] neznana napaka (koda -1)");
 							}
@@ -205,45 +209,70 @@ streznik.get("/query/prijavi/:ime/:priimek/:delavnica/:datum", (zahteva, odgovor
 						}
 					});
 				}
-			});	
+			});
 		}
 	});
 
 	//pb.run("INSERT INTO Prijava ('ID_udelezenca', 'ID_delavnice', 'datum') VALUES ('','','')");
 	//odgovor.end("-> "+ime + " " + priimek + " " + delavnica + " " +datum);
 	//moznih vec odgovorov:
-		// - dvakratni vpis (isti dan) (1)
-		// - prevec vpisanih (2)
-		// - udelezenec je ze bil na delavnici (3)
-		// - ... (4 ...)
+	// - dvakratni vpis (isti dan) (1)
+	// - prevec vpisanih (2)
+	// - udelezenec je ze bil na delavnici (3)
+	// - ... (4 ...)
 });
 
-var veljavno = (id_udel, id_del, datum, povratniKlic)=>{
-	pb.all("SELECT count(*) AS aliJe FROM prijava WHERE ID_udelezenca = "+id_udel+" AND datum = '"+datum+"'", (napaka, vrstice)=>{
-		if(napaka){
+var veljavno = (id_udel, id_del, datum, povratniKlic) => {
+	pb.all("SELECT count(*) AS aliJe FROM prijava WHERE ID_udelezenca = " + id_udel + " AND datum = '" + datum + "';", (napaka, vrstice) => {
+		if (napaka) {
 			console.log("[er] napaka pri preverjanju udelezenca");
 			povratniKlic(-1); //ce je -1, potem je napaka nekje
 		}
-		else{
+		else {
 			let aliJe = vrstice[0].aliJe;
-
-			if(aliJe == 1){ //to pomeni, da je bil udelezenec ze vpisan na delavnico.
+			if (aliJe == 1) { //to pomeni, da je bil udelezenec ze vpisan na delavnico.
 				povratniKlic(1);
 			}
-			else{
-				pb.all("SELECT count(*) AS aliNaDelavnici FROM prijava WHERE ID_udelezenca = "+id_udel+" AND ID_delavnice = "+id_del+"", (napaka, vrstice)=>{
-					if(napaka){
+			else {
+				pb.all("SELECT count(*) AS aliNaDelavnici FROM prijava WHERE ID_udelezenca = " + id_udel + " AND ID_delavnice = " + id_del + ";", (napaka, vrstice) => {
+					if (napaka) {
 						povratniKlic(-1);
 					}
-					else{
+					else {
 						let aliJeZeBilNaDelavnici = vrstice[0].aliNaDelavnici;
-						if(aliJeZeBilNaDelavnici){
+						console.log("" + aliJeZeBilNaDelavnici);
+						if (aliJeZeBilNaDelavnici) {
 							povratniKlic(2); //to pomeni, da je udelezenec ze bil vpisan na delavnico
 						}
-						else{ //napisi se pogoj, da je count(*) manjsi od maksimalnega stevila ljudi na delavnici (delavnice.st_mest)
+						else { //napisi se pogoj, da je count(*) manjsi od maksimalnega stevila ljudi na delavnici (delavnice.st_mest)
 							//pb.all("SELECT count(*) AS steviloPrijavljenih FROM prijava WHERE ")
+							//
+							vrniSteviloMest(id_del, (mestaDel) => {
+								mestaDel = parseInt(mestaDel);
+								//console.log(id_del + "->" + mestaDel);
+								//datum (preveri, koliko ljudi je ze bilo vpisanih na delavnici danes)
+								pb.all("SELECT count(*) AS stPrijav FROM prijava WHERE ID_delavnice = " + id_del + " AND datum = '" + datum + "';",
+									(napaka, vrstice) => {
+										if (napaka) {
+											//console.log("napaka pri preverjanju stevila ljudi na delavnici");
+											povratniKlic(-1); //-1 je generalni error
+										}
+										else {
+											let steviloVpisanih = parseInt(vrstice[0].stPrijav);
+											console.log("==== " + steviloVpisanih + "?<" + mestaDel + " ====");
 
-							povratniKlic(0); //to pomeni, da se udelezenec lahko vpise na delavnico
+
+											if ((steviloVpisanih >= mestaDel) && 1) { //tale 1: to je za override
+												//console.log("[er] stevilo prijavljenih je ze preseglo maksimalno vrednost");
+												povratniKlic(3); //3 je koda za preveliko stevilo ljudi
+											}
+											else {
+												povratniKlic(0);
+											}
+										}
+									});
+							});
+							//povratniKlic(0); //to pomeni, da se udelezenec lahko vpise na delavnico
 						}
 					}
 				});
@@ -252,9 +281,67 @@ var veljavno = (id_udel, id_del, datum, povratniKlic)=>{
 	});
 }
 
-streznik.get("/query/odjavi/:ime/:priimek/:delavnica/:datum", (zahteva, odgovor)=>{
+var vrniSteviloMest = (ID_delavnice, povratniKlic) => {
+	pb.all("SELECT st_mest FROM Delavnice WHERE ID_delavnice = " + ID_delavnice + ";", (napaka, vrstice) => {
+		if (napaka) {
+			console.log("[er] " + napaka);
+			povratniKlic(-1); //vrne -1 (npr. neveljavni id, ...)
+		}
+		else {
+			let stMest = vrstice[0].st_mest;
+			//console.log(stMest);
+			povratniKlic(stMest)
+		}
+	});
+};
+
+var vrniVpisaneNaDel = (ID_del, datum, povratniKlic) => {
+	pb.all(
+		"SELECT d.naziv, u.ime, u.priimek FROM Prijava p, Udelezenci u, Delavnice d WHERE \
+		p.ID_udelezenca = u.ID_udelezenca AND \
+		p.ID_delavnice = d.ID_delavnice AND \
+		p.ID_delavnice = "+ ID_del + " AND datum = '" + datum + "';",
+		(napaka, vrstice) => {
+			if (napaka) {
+				povratniKlic(-1);
+			}
+			else {
+				povratniKlic(vrstice);
+			}
+		});
+};
+
+
+//funkcija izpise porocilo z delavnic
+streznik.get("/query/porocilo/:datum", (zahteva, odgovor) => {
+	//pridobi vse ID_je delavnice, za vsakega pridobi udelezenca, nato pa zgeneriraj
+	let datum = zahteva.params.datum;
+
+	getDelavnice((tip, vrstice) => {
+		if (tip == 0) odgovor.end("napaka");
+		else {
+			//for(let i = 0; i < vrstice.length; i++){
+				/*
+				let i = 0;
+				vrniVpisaneNaDel(vrstice[i].ID_delavnice, datum, (podatki)=>{
+					console.log(vrstice[i].naziv + ":");
+					console.log(podatki);
+					vrniVpisaneNaDel(vrstice[i+1].ID_delavnice, datum, (podatki)=>{
+
+					});
+				});
+			}
+			*/
+			odgovor.end("mfw");
+		}
+	});
+});
+
+
+
+streznik.get("/query/odjavi/:ime/:priimek/:delavnica/:datum", (zahteva, odgovor) => {
 	//console.log(zahteva.params.ime + " " + zahteva.params.priimek + " " + zahteva.params.delavnica + " " + zahteva.params.datum);
-	
+
 	let ime = zahteva.params.ime;
 	let priimek = zahteva.params.priimek;
 	let delavnica = zahteva.params.delavnica;
@@ -262,27 +349,27 @@ streznik.get("/query/odjavi/:ime/:priimek/:delavnica/:datum", (zahteva, odgovor)
 
 
 
-	pb.all("SELECT ID_udelezenca AS ID_u FROM Udelezenci WHERE ime = '"+ime+"' AND priimek = '"+priimek+"';", (napaka, vrstice)=>{
-		if(napaka){
+	pb.all("SELECT ID_udelezenca AS ID_u FROM Udelezenci WHERE ime = '" + ime + "' AND priimek = '" + priimek + "';", (napaka, vrstice) => {
+		if (napaka) {
 			console.log(napaka);
 			odgovor.end(napaka);
 		}
-		else{
+		else {
 			let ID_u = vrstice[0].ID_u;
-			pb.all("SELECT ID_delavnice AS ID_d FROM Delavnice WHERE naziv = '"+delavnica+"';", (napaka, vrstice)=>{
-				if(napaka){
+			pb.all("SELECT ID_delavnice AS ID_d FROM Delavnice WHERE naziv = '" + delavnica + "';", (napaka, vrstice) => {
+				if (napaka) {
 					console.log(napaka);
 					odgovor.end(napaka);
 				}
-				else{
+				else {
 					let ID_d = vrstice[0].ID_d;
 					//ok, mamo id u, id d
-					pb.run("DELETE FROM Prijava WHERE ID_udelezenca = '"+ID_u+"' AND ID_delavnice = '"+ID_d+"' AND datum = '"+datum+"';", (rezultat)=>{
-						if(!rezultat){ //to je ok
+					pb.run("DELETE FROM Prijava WHERE ID_udelezenca = '" + ID_u + "' AND ID_delavnice = '" + ID_d + "' AND datum = '" + datum + "';", (rezultat) => {
+						if (!rezultat) { //to je ok
 							console.log(rezultat);
 							odgovor.end(rezultat);
 						}
-						else{
+						else {
 							console.log("[er] " + rezultat);
 							odgovor.end("[er] " + rezultat);
 						}
@@ -319,12 +406,12 @@ streznik.post("/query/dodajJSON/", (zahteva, odgovor) => { //"/query/prijavljeni
 		}
 		vrstice = vrstice + ")";
 	}
-	
+
 	//console.log(vrstice);
 	//console.log(stolpci);
 	//odgovor.end("success");
 
-	
+
 	//query: ----------------------------------------
 	pb.run(
 		"INSERT INTO " + tabela + " (" + stolpci + ") VALUES " + vrstice + ";",

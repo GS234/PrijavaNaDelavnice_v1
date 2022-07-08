@@ -1,7 +1,7 @@
 var delavnica_izbrana;
 var seznamPrijavljenih;
 var datum_vnos;
-var datum_input;
+var datum_input; //datum_input.value => to je za izbrani datum
 var datum_text;
 
 let izberiDelavnico = (delavnica)=>{
@@ -115,6 +115,14 @@ var izpisiStanje = (tip, sporocilo)=>{
     else if(tip == 2) prijava_response.innerHTML = "[server] " + sporocilo;
     else prijava_response.innerHTML = "[er] " + sporocilo;
 }
+
+var generirajPorocilo = ()=>{
+    //console.log("gumb kliknjen");
+
+    window.open("/query/porocilo/"+datum_input.value+"/", '_blank').focus();
+
+
+};
 
 
 

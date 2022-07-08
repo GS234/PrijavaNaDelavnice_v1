@@ -9,6 +9,9 @@
             <span class="oznaka2" id="datum_value">4. 4. 2022</span>
             <button id="datum_reset">Dons</button>
         </div>
+
+        <button onclick="generirajPorocilo()">Generiraj poročilo</button>
+
         <h2>Seznam otrok na delavnici: <span class="oznaka" id="delavnica_izbrana" hidden></span></h2>
          <!--- type="date" -->
         <!-- kle bi blo bols met tabelco -->
@@ -30,7 +33,7 @@
     <!-- polje za prijavo -->
     <div>
         <h2>Prijavi udeleženca</h2>
-        <span id="prijava_response"></span>
+        <span id="prijava_response" class="oznaka2"></span>
         <div id="prijava_polje">
             <!-- <p style="color:rgba(158, 158, 158, 0.725)">!!!potrebna implementacija!!!</p> -->
             <input id="input_prijava" type="text" placeholder="išči">
