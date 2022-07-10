@@ -50,7 +50,7 @@ var dodajPodatkeCSV = (file, tab)=>{
         //vrstice
         for(let i = 0; i < vrstice.length; i++){
             tab_vsebina += "<tr id='row_"+i+"'> <td><button id='"+"btn_"+i+"' onclick='izbrisiVrstico("+i+")'>X</button></td> ";
-            let polja = vrstice[i].split(',');
+            let polja = vrstice[i].split(','); ////DELIMITER!!
             if(colMax < polja.length) colMax = polja.length; //nastavimo polja
             for(let j = 0; j < polja.length; j++){
                 tab_vsebina += "<td id='col_"+j+"'><input value='"+polja[j]+"'></td>";
