@@ -9,6 +9,7 @@ let izberiDelavnico = (delavnica)=>{
         if(delavnica_izbrana != undefined){
             delavnica_izbrana.innerHTML = delavnica;
             seznamPrijavljenih.innerHTML = "";
+            //delavnica_izbrana.innerHTML = "";
             delavnica_izbrana.hidden = false;
 
             //naredi ajax request:
