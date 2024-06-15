@@ -8,7 +8,7 @@
         "express": "*",
         "formidable": "*",
         "hbs": "*",
-        "sqlite3": "*"
+        "sqlite3": "^5.1.7"
     },
     "private": true
 }
