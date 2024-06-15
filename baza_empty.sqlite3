@@ -1,0 +1,20 @@
+create table Delavnice(
+    ID_delavnice INTEGER PRIMARY KEY,
+    naziv varchar(255) NOT NULL,
+    st_mest int
+);
+create table Udelezenci(
+    ID_udelezenca INTEGER PRIMARY KEY,
+    ime varchar(255) NOT NULL,
+    priimek varchar(255) NOT NULL,
+    starost int
+);
+create table Prijava(
+    ID_prijave INTEGER PRIMARY KEY,
+    ID_udelezenca INTEGER NOT NULL,
+    ID_delavnice INTEGER NOT NULL,
+    /*datum DATETIME NOT NULL,*/
+    datum DATE NOT NULL,
+    FOREIGN KEY(ID_udelezenca) REFERENCES Udelezenci(ID_udelezenca),
+    FOREIGN KEY(ID_delavnice) REFERENCES Delavnice(ID_delavnice)
+);
